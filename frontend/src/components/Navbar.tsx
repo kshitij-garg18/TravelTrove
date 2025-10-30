@@ -9,7 +9,7 @@ const Navbar: React.FC = () => {
     <nav className="navbar">
       <div className="logo">
         <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
-          Traveler
+          Traveltrove
         </Link>
       </div>
 
