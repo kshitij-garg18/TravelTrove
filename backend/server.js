@@ -4,6 +4,8 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -13,16 +15,22 @@ const destinationRoutes = require("./routes/destinationRoutes");
 const itineraryRoutes = require("./routes/itineraryRoutes");
 const favouriteRoutes = require("./routes/favouriteRoutes");
 
-app.use("/auth", authRoutes);
-app.use("/destination-guides", destinationRoutes);
-app.use("/trip-itineraries", itineraryRoutes);
-app.use("/favourites", favouriteRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/destination-guides", destinationRoutes);
+app.use("/api/trip-itineraries", itineraryRoutes);
+app.use("/api/favourites", favouriteRoutes);
 
+// Health check route
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", message: "Server is running" });
+});
 
-
-mongoose.connect(process.env.MONGO_URI)
+// Connect to MongoDB
+mongoose
+  .connect(process.env.MONGO_URI || "mongodb://localhost:27017/traveltrove")
   .then(() => {
-    console.log(" MongoDB Connected");
-    app.listen(5000, () => console.log("Server running on port 5000"));
+    console.log("✅ MongoDB Connected");
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
-  .catch(err => console.error("Mongo Error:", err));
+  .catch((err) => console.error("❌ MongoDB Error:", err));

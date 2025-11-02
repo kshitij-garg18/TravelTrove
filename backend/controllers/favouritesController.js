@@ -1,45 +1,121 @@
-//import { Request, Response } from "express";
+const Favourite = require("../models/Favourite");
+const DestinationGuide = require("../models/DestinationGuide");
+const TripItinerary = require("../models/TripItinerary");
 
-// Temporary in-memory data
-//const favourites: { [userId: string]: string[] } = {};
-const favourites = {}
-// ⭐ Add to favourites
-exports.addFavourite = (req, res) => {
-  const userId = req.user.id;
-  const { destinationId } = req.body;
+exports.addFavourite = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const { destinationGuideId, tripItineraryId } = req.body;
 
-  if (!destinationId)
-    return res.status(400).json({ message: "destinationId is required" });
+    // Validate that at least one ID is provided
+    if (!destinationGuideId && !tripItineraryId) {
+      return res.status(400).json({
+        message: "Either destinationGuideId or tripItineraryId is required",
+      });
+    }
 
-  if (!favourites[userId]) favourites[userId] = [];
+    // Validate that only one is provided
+    if (destinationGuideId && tripItineraryId) {
+      return res.status(400).json({
+        message: "Cannot save both destinationGuideId and tripItineraryId in one favourite",
+      });
+    }
 
-  if (favourites[userId].includes(destinationId))
-    return res.status(400).json({ message: "Already in favourites" });
+    // Check if item exists
+    if (destinationGuideId) {
+      const destination = await DestinationGuide.findById(destinationGuideId);
+      if (!destination) {
+        return res.status(404).json({ message: "Destination guide not found" });
+      }
+    }
 
-  favourites[userId].push(destinationId);
-  res.status(200).json({
-    message: "Added to favourites",
-    favourites: favourites[userId],
-  });
+    if (tripItineraryId) {
+      const itinerary = await TripItinerary.findById(tripItineraryId);
+      if (!itinerary) {
+        return res.status(404).json({ message: "Trip itinerary not found" });
+      }
+    }
+
+    // Check if already in favourites
+    const existing = await Favourite.findOne({
+      userId,
+      $or: [
+        { destinationGuideId },
+        { tripItineraryId },
+      ],
+    });
+
+    if (existing) {
+      return res.status(400).json({ message: "Already in favourites" });
+    }
+
+    // Create favourite
+    const fav = new Favourite({
+      userId,
+      destinationGuideId: destinationGuideId || null,
+      tripItineraryId: tripItineraryId || null,
+    });
+
+    await fav.save();
+
+    // Populate and return
+    const populatedFav = await Favourite.findById(fav._id)
+      .populate("destinationGuideId")
+      .populate("tripItineraryId")
+      .lean();
+
+    res.status(201).json(populatedFav);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
 
-// ❌ Remove from favourites
-exports.removeFavourite = (req, res) => {
-  const userId = req.user.id;
-  const { destinationId } = req.params;
+exports.getFavourites = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
 
-  if (!favourites[userId])
-    return res.status(404).json({ message: "No favourites found for user" });
+    const favourites = await Favourite.find({ userId })
+      .populate("destinationGuideId")
+      .populate("tripItineraryId")
+      .lean();
 
-  favourites[userId] = favourites[userId].filter((id) => id !== destinationId);
-  res.status(200).json({
-    message: "Removed from favourites",
-    favourites: favourites[userId],
-  });
+    // Transform the data to match frontend expectations
+    // Mongoose populates destinationGuideId and tripItineraryId, but frontend expects destinationGuide and tripItinerary
+    const transformedFavourites = favourites.map((fav) => {
+      const transformed = {
+        _id: fav._id,
+        userId: fav.userId,
+        createdAt: fav.createdAt,
+        destinationGuide: fav.destinationGuideId && typeof fav.destinationGuideId === 'object' ? fav.destinationGuideId : null,
+        tripItinerary: fav.tripItineraryId && typeof fav.tripItineraryId === 'object' ? fav.tripItineraryId : null,
+      };
+      
+      return transformed;
+    }).filter(fav => fav.destinationGuide || fav.tripItinerary); // Filter out favourites with no valid data
+
+    res.json(transformedFavourites);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
 
-// 📋 Get all favourites
-exports.getFavourites = (req, res) => {
-  const userId = req.user.id;
-  res.status(200).json({ favourites: favourites[userId] || [] });
+exports.removeFavourite = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const { id } = req.params;
+
+    // Find and delete favourite
+    const favourite = await Favourite.findOneAndDelete({
+      _id: id,
+      userId,
+    });
+
+    if (!favourite) {
+      return res.status(404).json({ message: "Favourite not found" });
+    }
+
+    res.json({ message: "Removed from favourites" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };

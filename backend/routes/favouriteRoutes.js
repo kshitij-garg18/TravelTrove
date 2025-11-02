@@ -8,8 +8,9 @@ const {
 
 const router = express.Router();
 
-router.post("/add", verifyToken, addFavourite);
-router.delete("/remove/:destinationId", verifyToken, removeFavourite);
+// All favourite routes require authentication
+router.post("/", verifyToken, addFavourite);
+router.delete("/:id", verifyToken, removeFavourite);
 router.get("/", verifyToken, getFavourites);
 
 module.exports = router;

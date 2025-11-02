@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getDestinationById } from '../services/destinationService';
+import { getItineraryById } from '../services/itineraryService';
 import { addFavourite } from '../services/favouriteService';
-import { DestinationGuide } from '../types';
+import { TripItinerary } from '../types';
 import Rating from '../components/Rating';
 import ReviewCard from '../components/ReviewCard';
-import './DestinationDetails.css';
+import './ItineraryDetails.css';
 
-const DestinationDetails: React.FC = () => {
+const ItineraryDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [destination, setDestination] = useState<DestinationGuide | null>(null);
+  const [itinerary, setItinerary] = useState<TripItinerary | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [reviewRating, setReviewRating] = useState<number>(5);
@@ -20,21 +20,21 @@ const DestinationDetails: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      loadDestination();
+      loadItinerary();
     }
   }, [id]);
 
-  const loadDestination = async () => {
+  const loadItinerary = async () => {
     if (!id) return;
 
     setLoading(true);
     setError('');
     try {
-      const data = await getDestinationById(id);
-      setDestination(data);
+      const data = await getItineraryById(id);
+      setItinerary(data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load destination');
-      console.error('Error loading destination:', err);
+      setError(err.response?.data?.message || 'Failed to load itinerary');
+      console.error('Error loading itinerary:', err);
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ const DestinationDetails: React.FC = () => {
     if (!id) return;
 
     try {
-      await addFavourite(id);
+      await addFavourite(undefined, id);
       alert('Added to favourites!');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Failed to add favourite';
@@ -73,38 +73,32 @@ const DestinationDetails: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="destination-details-loading">Loading destination...</div>;
+    return <div className="itinerary-details-loading">Loading itinerary...</div>;
   }
 
-  if (error && !destination) {
-    return <div className="destination-details-error">{error}</div>;
+  if (error && !itinerary) {
+    return <div className="itinerary-details-error">{error}</div>;
   }
 
-  if (!destination) {
-    return <div className="destination-details-error">Destination not found</div>;
+  if (!itinerary) {
+    return <div className="itinerary-details-error">Itinerary not found</div>;
   }
 
   return (
-    <div className="destination-details">
+    <div className="itinerary-details">
       {error && <div className="error-message">{error}</div>}
 
-      <div className="destination-header">
-        <div className="destination-images">
-          {destination.photos && destination.photos.length > 0 ? (
-            <div className="main-image">
-              <img src={destination.photos[0]} alt={destination.title} />
-            </div>
-          ) : (
-            <div className="main-image placeholder">No image available</div>
+      <div className="itinerary-header">
+        <div className="itinerary-info">
+          <h1>{itinerary.destination} Itinerary</h1>
+          <p className="duration">Duration: {itinerary.duration} day{itinerary.duration > 1 ? 's' : ''}</p>
+          {itinerary.userId && (
+            <p className="creator">Created by: {itinerary.userId.email}</p>
           )}
-        </div>
-        <div className="destination-info">
-          <h1>{destination.title}</h1>
-          {destination.location && <p className="location">📍 {destination.location}</p>}
-          {destination.ratings && (
+          {itinerary.ratings && (
             <div className="rating-section">
-              <Rating value={destination.ratings.average} readonly showValue size="large" />
-              <span className="rating-count">({destination.ratings.count} reviews)</span>
+              <Rating value={itinerary.ratings.average} readonly showValue size="large" />
+              <span className="rating-count">({itinerary.ratings.count} reviews)</span>
             </div>
           )}
           <button onClick={handleAddToFavourite} className="favourite-button">
@@ -113,18 +107,32 @@ const DestinationDetails: React.FC = () => {
         </div>
       </div>
 
-      <div className="destination-content">
-        <div className="content-section">
-          <h2>Overview</h2>
-          <p>{destination.summary}</p>
-          {destination.description && <p>{destination.description}</p>}
-        </div>
+      <div className="itinerary-content">
+        {itinerary.activities && itinerary.activities.length > 0 && (
+          <div className="content-section">
+            <h2>Activities</h2>
+            <div className="activities-list">
+              {itinerary.activities.map((activity, index) => (
+                <div key={index} className="activity-card">
+                  <h3>{activity.name}</h3>
+                  <p>{activity.description}</p>
+                  {(activity.date || activity.time) && (
+                    <p className="activity-time">
+                      {activity.date && <span>Date: {activity.date}</span>}
+                      {activity.time && <span>Time: {activity.time}</span>}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-        {destination.lodging && destination.lodging.length > 0 && (
+        {itinerary.lodging && itinerary.lodging.length > 0 && (
           <div className="content-section">
             <h2>Lodging Recommendations</h2>
             <div className="recommendations-grid">
-              {destination.lodging.map((lodging, index) => (
+              {itinerary.lodging.map((lodging, index) => (
                 <div key={index} className="recommendation-card">
                   <h3>{lodging.name}</h3>
                   <p className="type">{lodging.type}</p>
@@ -137,11 +145,11 @@ const DestinationDetails: React.FC = () => {
           </div>
         )}
 
-        {destination.dining && destination.dining.length > 0 && (
+        {itinerary.dining && itinerary.dining.length > 0 && (
           <div className="content-section">
             <h2>Dining Recommendations</h2>
             <div className="recommendations-grid">
-              {destination.dining.map((dining, index) => (
+              {itinerary.dining.map((dining, index) => (
                 <div key={index} className="recommendation-card">
                   <h3>{dining.name}</h3>
                   <p className="type">Cuisine: {dining.cuisine}</p>
@@ -156,9 +164,9 @@ const DestinationDetails: React.FC = () => {
 
         <div className="content-section">
           <h2>Reviews</h2>
-          {destination.reviews && destination.reviews.length > 0 ? (
+          {itinerary.reviews && itinerary.reviews.length > 0 ? (
             <div className="reviews-list">
-              {destination.reviews.map((review) => (
+              {itinerary.reviews.map((review) => (
                 <ReviewCard key={review._id} review={review} />
               ))}
             </div>
@@ -193,4 +201,4 @@ const DestinationDetails: React.FC = () => {
   );
 };
 
-export default DestinationDetails;
+export default ItineraryDetails;

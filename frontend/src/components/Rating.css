@@ -1,0 +1,37 @@
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  font-size: 20px;
+  color: #ddd;
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: #ffc107;
+}
+
+.star.empty {
+  color: #ddd;
+}
+
+.rating-small .star {
+  font-size: 16px;
+}
+
+.rating-large .star {
+  font-size: 24px;
+}
+
+.rating-value {
+  font-weight: bold;
+  color: #333;
+}

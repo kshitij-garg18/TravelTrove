@@ -4,20 +4,46 @@ const jwt = require("jsonwebtoken");
 
 exports.registerUser = async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password } = req.body;
 
-    // 1️⃣ Check if user already exists
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "User already exists" });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-    // 2️⃣ Hash password
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3️⃣ Save user
-    const newUser = new User({ email, password: hashedPassword, name });
+    // Save user
+    const newUser = new User({ email, password: hashedPassword });
     await newUser.save();
 
-    res.status(201).json({ message: "User registered successfully" });
+    // Create JWT token
+    const token = jwt.sign(
+      { userId: newUser._id, email: newUser.email },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "7d" }
+    );
+
+    // Return token and user info (without password)
+    res.status(201).json({
+      token,
+      user: {
+        _id: newUser._id,
+        email: newUser.email,
+        role: newUser.role,
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
@@ -27,22 +53,39 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1️⃣ Find user
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    // Find user
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found" });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    // 2️⃣ Compare password
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    // 3️⃣ Create JWT token
+    // Create JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "2h" }
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "7d" }
     );
 
-    res.json({ message: "Login successful", token });
+    // Return token and user info (without password)
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }

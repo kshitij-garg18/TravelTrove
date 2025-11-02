@@ -1,35 +1,43 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import './Navbar.css';
 
 const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, logout, isAdmin } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <nav className="navbar">
-      <div className="logo">
-        <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
-          Traveltrove
-        </Link>
-      </div>
+      <Link to="/" className="logo">
+        TravelTrove
+      </Link>
 
-      <ul className="nav-links">
-        <li><Link to="/">Home</Link></li>
-        <li><Link to="/itinerary">Itinerary</Link></li>
-        <li><Link to="/groups">Groups</Link></li>
-        <li><Link to="/admin">Admin</Link></li>
-        {user ? (
+      <div className="nav-links">
+        <Link to="/">Home</Link>
+        <Link to="/trip-itineraries">Browse Itineraries</Link>
+        <Link to="/create-itinerary">Create Itinerary</Link>
+
+        {isAuthenticated() && <Link to="/favourites">Favourites</Link>}
+        {isAuthenticated() && <Link to="/travel-groups">Travel Groups</Link>}
+        {isAdmin() && <Link to="/admin">Admin</Link>}
+
+        {!isAuthenticated() ? (
           <>
-            <li><Link to="/profile">{user.name}</Link></li>
-            <li><button style={{ background: "transparent", color: "white", border: "none", cursor: "pointer" }} onClick={logout}>Logout</button></li>
+            <Link to="/login">Login</Link>
+            <Link to="/register">Register</Link>
           </>
         ) : (
-          <>
-            <li><Link to="/login">Login</Link></li>
-            <li><Link to="/register">Register</Link></li>
-          </>
+          <button onClick={handleLogout} className="logout-button">
+            Logout
+          </button>
         )}
-      </ul>
+      </div>
     </nav>
   );
 };

@@ -1,0 +1,222 @@
+.itinerary-details {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.itinerary-details-loading,
+.itinerary-details-error {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+}
+
+.itinerary-details-error {
+  color: #721c24;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #f5c6cb;
+}
+
+.itinerary-header {
+  margin-bottom: 40px;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.itinerary-info h1 {
+  margin: 0 0 16px 0;
+  font-size: 32px;
+  color: #333;
+}
+
+.duration,
+.creator {
+  color: #666;
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.rating-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.rating-count {
+  color: #999;
+  font-size: 14px;
+}
+
+.favourite-button {
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  margin-top: 16px;
+}
+
+.favourite-button:hover {
+  background-color: #0056b3;
+}
+
+.itinerary-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.content-section {
+  margin-bottom: 40px;
+}
+
+.content-section:last-child {
+  margin-bottom: 0;
+}
+
+.content-section h2 {
+  font-size: 24px;
+  margin: 0 0 20px 0;
+  color: #333;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activity-card {
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.activity-card h3 {
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+.activity-card p {
+  margin: 8px 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.activity-time {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: #999;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.recommendation-card {
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.recommendation-card h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.recommendation-card .type {
+  font-weight: bold;
+  color: #007bff;
+  margin: 0 0 12px 0;
+}
+
+.recommendation-card .price {
+  font-weight: bold;
+  color: #28a745;
+  margin: 8px 0;
+}
+
+.recommendation-card .address {
+  font-size: 14px;
+  color: #999;
+  margin: 8px 0 0 0;
+}
+
+.reviews-list {
+  margin-bottom: 30px;
+}
+
+.add-review {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.add-review h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rating-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rating-input label {
+  font-weight: bold;
+}
+
+.review-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.submit-review-button {
+  padding: 12px 24px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  align-self: flex-start;
+  transition: background-color 0.3s;
+}
+
+.submit-review-button:hover {
+  background-color: #218838;
+}

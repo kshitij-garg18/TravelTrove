@@ -1,27 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, FormEvent } from 'react';
+import './SearchBar.css';
 
-interface Props {
-  onSearch?: (query: string) => void;
+interface SearchBarProps {
+  onSearch: (query: string) => void;
+  placeholder?: string;
 }
 
-const SearchBar: React.FC<Props> = ({ onSearch }) => {
-  const [query, setQuery] = useState("");
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch, placeholder = 'Search destinations...' }) => {
+  const [query, setQuery] = useState<string>('');
 
-  const handle = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (onSearch) onSearch(query.trim());
-    else console.log("Search query:", query);
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSearch(query);
   };
 
   return (
-    <form className="search-bar" onSubmit={handle}>
+    <form className="search-bar" onSubmit={handleSubmit}>
       <input
-        aria-label="search destinations"
+        type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search destinations, e.g. Goa, Manali, Leh..."
+        placeholder={placeholder}
+        className="search-input"
       />
-      <button type="submit">Search</button>
+      <button type="submit" className="search-button">
+        Search
+      </button>
     </form>
   );
 };
